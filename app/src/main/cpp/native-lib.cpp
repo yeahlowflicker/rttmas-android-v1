@@ -71,7 +71,7 @@ JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *reserved) {
 }
 
 JNIEXPORT jboolean JNICALL
-Java_com_pipikai_android_1ncnn_1yolo11_YoloNcnn_loadModel(JNIEnv *env, jobject thiz,
+Java_com_mwnl_rttmas_1android_services_YoloService_loadModel(JNIEnv *env, jobject thiz,
                                                           jobject assetManager,
                                                           jint modelid, jint cpugpu) {
     if (modelid < 0 || cpugpu < 0 || cpugpu > 1) {
@@ -107,7 +107,7 @@ Java_com_pipikai_android_1ncnn_1yolo11_YoloNcnn_loadModel(JNIEnv *env, jobject t
     }
 
     // init jni glue
-    jclass localObjCls = env->FindClass("com/pipikai/android_ncnn_yolo11/YoloNcnn$Obj");
+    jclass localObjCls = env->FindClass("com/mwnl/rttmas_android/services/YoloService$Obj");
     objCls = reinterpret_cast<jclass>(env->NewGlobalRef(localObjCls));
 
     constructortorId = env->GetMethodID(objCls, "<init>", "()V");
@@ -124,7 +124,7 @@ Java_com_pipikai_android_1ncnn_1yolo11_YoloNcnn_loadModel(JNIEnv *env, jobject t
 int imgWidth;
 int imgHeight;
 JNIEXPORT jobjectArray JNICALL
-Java_com_pipikai_android_1ncnn_1yolo11_YoloNcnn_Detect(JNIEnv *env, jobject thiz, jobject bitmap) {
+Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject thiz, jobject bitmap) {
     cv::Mat img = bitmapToMat(env, bitmap);
 
     imgWidth = img.cols;
