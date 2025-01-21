@@ -1,6 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -55,6 +57,8 @@ dependencies {
     implementation libs.androidx.material3.android
     implementation libs.androidx.material3.common.android
     implementation libs.play.services.location
+    implementation libs.firebase.bom
+    implementation libs.firebase.messaging
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
@@ -71,4 +75,7 @@ dependencies {
 
     implementation libs.org.eclipse.paho.client.mqttv3
     implementation libs.org.eclipse.paho.android.service
+
+    implementation platform(libs.firebase.bom)
+    implementation libs.firebase.messaging
 }
