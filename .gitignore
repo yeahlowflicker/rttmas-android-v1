@@ -14,3 +14,8 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/assets/*.bin
+/app/src/main/assets/*.param
+/app/src/main/cpp/ncnn-*
+/app/src/main/cpp/opencv-*
+
