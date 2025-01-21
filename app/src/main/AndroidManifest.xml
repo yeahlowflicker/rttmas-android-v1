@@ -2,18 +2,24 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Camera -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- GPS -->
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- Phone State -->
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
         tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE"
         tools:ignore="ProtectedPermissions" />
+
+
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="32"
         tools:ignore="ScopedStorage" />
@@ -47,10 +53,22 @@
         </activity>
 
 
+        <!-- MQTT -->
         <service
             android:name="org.eclipse.paho.android.service.MqttService"
             android:exported="false"
         />
+
+
+        <!-- FCM -->
+        <service
+            android:name=".services.FcmService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+                <action android:name="com.rttmas.OnAlertReceived" />
+            </intent-filter>
+        </service>
 
     </application>
 
