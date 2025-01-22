@@ -1,10 +1,7 @@
 package com.mwnl.rttmas_android.services
 
-import android.content.Context
 import android.util.Log
-import android.widget.TextView
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
-import org.eclipse.paho.client.mqttv3.IMqttAsyncClient
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.IMqttToken
 import org.eclipse.paho.client.mqttv3.MqttAsyncClient
@@ -14,22 +11,20 @@ import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
 import org.json.JSONObject
 import java.nio.charset.StandardCharsets
-import java.util.Objects
 import javax.net.ssl.SSLSocketFactory
 
+
+const val TAG = "RTTMAS"
+const val MQTT_SERVER_URI = "ssl://rttmas.mwnl.ce.ncu.edu.tw:8883" // Replace with your MQTTS URI
+const val MQTT_CLIENT_ID = "android__rttmas"
+const val MQTT_USERNAME = "test"
+const val MQTT_PASSWORD = "test"
+const val MQTT_QOS = 0
 
 class MqttService {
 
     private lateinit var mqttClient: MqttAsyncClient
 
-    companion object {
-        private const val TAG = "RTTMAS"
-        private const val MQTT_SERVER_URI = "ssl://rttmas.mwnl.ce.ncu.edu.tw:8883" // Replace with your MQTTS URI
-        private const val MQTT_CLIENT_ID = "android__rttmas"
-        private const val MQTT_USERNAME = "test"
-        private const val MQTT_PASSWORD = "test"
-        private const val MQTT_QOS = 0
-    }
 
     init {
         connectToMqttServer()
