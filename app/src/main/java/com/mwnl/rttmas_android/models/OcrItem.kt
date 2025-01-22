@@ -6,6 +6,7 @@ class OcrItem(
     var bitmap: Bitmap,
     var ocrResult: String = ""
 ) {
+    var isProcessed: Boolean = false
     var ocrStartTime: Long = -1
     var ocrEndTime: Long = -1
 
