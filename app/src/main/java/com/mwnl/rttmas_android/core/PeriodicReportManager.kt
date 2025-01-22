@@ -7,34 +7,39 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import com.mwnl.rttmas_android.R
-import com.mwnl.rttmas_android.models.OcrItem
-import com.mwnl.rttmas_android.models.ReportPayload
+import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.CameraService
 import com.mwnl.rttmas_android.services.GpsInfoService
 import com.mwnl.rttmas_android.services.ImageCaptureCallback
 import com.mwnl.rttmas_android.services.MqttService
 import com.mwnl.rttmas_android.services.YoloService.Obj
-import java.util.Queue
 
 const val MQTT_TOPIC_PERIODIC_REPORT = "report"
 
 class PeriodicReportManager(
+    var rttmas:                 RTTMAS,
     var activity:               Activity,
     var gui:                    GUI,
-    var ocrQueue:               Queue<OcrItem>,
     var cameraService:          CameraService,
     var mqttService:            MqttService,
     var gpsInfoService:         GpsInfoService,
     var licensePlateDetector:   LicensePlateDetector,
 ) {
 
+    fun uploadAndClearPreviousFrame(frame: ReportFrame) {
+        // Upload the payload via MQTT
+        mqttService.publishMessage(
+            MQTT_TOPIC_PERIODIC_REPORT,
+            frame.jsonify().toString()
+        )
+    }
 
     /**
      * Make a single report and upload to server via MQTT.
      *
      * @param [Context] context - The activity context
      */
-    fun makeReport(context: Context) {
+    fun initializeNewReportFrame(context: Context) {
 
         // Construct the callback for image capture
         // The onSuccess method contains the logic after the image
@@ -42,27 +47,26 @@ class PeriodicReportManager(
         val imageCaptureCallback = object: ImageCaptureCallback {
             override fun onSuccess(bitmap: Bitmap) {
 
+                // Construct a new report frame
+                rttmas.currentReportFrame = ReportFrame()
+
+                // Get system time in ms
+                rttmas.currentReportFrame.reportTimestamp = System.currentTimeMillis().toInt()
+
                 // Perform YOLO detection
-                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(bitmap)
+                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(rttmas.currentReportFrame, bitmap)
+
 
                 // Obtain GPS info
                 val gpsInfo = gpsInfoService.getGpsLocationInfo(context) ?: return
-
-
-                // Construct payload for MQTT upload
-                val reportPayload = ReportPayload()
-                reportPayload.applyGpsInfo(gpsInfo)
-
-
-                // Upload the payload via MQTT
-                mqttService.publishMessage(
-                    MQTT_TOPIC_PERIODIC_REPORT,
-                    reportPayload.jsonify().toString()
-                )
+                rttmas.currentReportFrame.applyGpsInfo(gpsInfo)
 
 
                 // Render the captured and annotated bitmap
                 activity.runOnUiThread {
+                    if (!rttmas.isDetectionEnabled)
+                        return@runOnUiThread
+
                     val annotatedBitmap = annotateBoundingBoxes(context, bitmap, detectedObjects)
                     gui.imageViewDetection.setImageBitmap(annotatedBitmap)
 

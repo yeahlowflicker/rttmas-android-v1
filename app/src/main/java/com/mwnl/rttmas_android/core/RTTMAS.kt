@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.util.Log
-import com.mwnl.rttmas_android.models.OcrItem
+import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.CameraService
 import com.mwnl.rttmas_android.services.FcmService
 import com.mwnl.rttmas_android.services.GpsInfoService
@@ -12,8 +12,6 @@ import com.mwnl.rttmas_android.services.MqttService
 import com.mwnl.rttmas_android.services.OcrService
 import com.mwnl.rttmas_android.services.PermissionService
 import com.mwnl.rttmas_android.services.YoloService
-import java.util.LinkedList
-import java.util.Queue
 
 // How often should a report be made, time interval in ms
 const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1000L
@@ -36,8 +34,10 @@ class RTTMAS(
     var isDetectionEnabled = false
 
 
-    // The OCR queue
-    private val ocrQueue : Queue<OcrItem> = LinkedList()
+
+
+    // A temporary report frame
+    var currentReportFrame = ReportFrame()
 
     // Core services
     var cameraService       = CameraService()
@@ -51,13 +51,13 @@ class RTTMAS(
 
     // License plate detector
     var licensePlateDetector = LicensePlateDetector(
-        ocrQueue, yoloService, ocrService
+        yoloService, ocrService
     )
 
     // Periodic report manager
     var periodicReportManager = PeriodicReportManager(
-        activity, gui,
-        ocrQueue, cameraService, mqttService,
+        this, activity, gui,
+        cameraService, mqttService,
         gpsInfoService, licensePlateDetector
     )
 
@@ -99,11 +99,11 @@ class RTTMAS(
     private fun startOcrThread() {
         Thread {
             while (true) {
-                if (ocrQueue.size == 0)
+                if (!isDetectionEnabled || currentReportFrame.ocrQueue.size == 0)
                     continue
 
-                val ocrItem = ocrQueue.remove()
-                licensePlateDetector.processOcrItem(ocrItem)
+                val ocrItem = currentReportFrame.ocrQueue.remove()
+                licensePlateDetector.processOcrItem(currentReportFrame, ocrItem)
             }
         }.start()
     }
@@ -115,11 +115,13 @@ class RTTMAS(
         handler.postDelayed(object : Runnable {
             override fun run() {
 
-                // Don't do anything, if detection is disabled
-                if (!isDetectionEnabled)
-                    return
+                if (isDetectionEnabled) {
+                    // Upload the previous report frame
+                    periodicReportManager.uploadAndClearPreviousFrame(currentReportFrame)
 
-                periodicReportManager.makeReport(context)
+                    // Then, initialize a new report frame if detection is enabled
+                    periodicReportManager.initializeNewReportFrame(context)
+                }
 
                 handler.postDelayed(this, PERIODIC_REPORT_INTERVAL_MILLISECS)
 

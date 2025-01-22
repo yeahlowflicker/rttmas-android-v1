@@ -2,16 +2,11 @@ package com.mwnl.rttmas_android.core
 
 import android.graphics.Bitmap
 import android.util.Log
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.mwnl.rttmas_android.models.OcrItem
+import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.OcrCallback
 import com.mwnl.rttmas_android.services.OcrService
 import com.mwnl.rttmas_android.services.YoloService
-import java.util.LinkedList
-import java.util.Locale
-import java.util.Queue
 
 
 private val MAX_OCR_QUEUE_CAPACITY = 5
@@ -19,7 +14,6 @@ private val MIN_VALID_LICENSE_PLATE_WIDTH = 200
 
 
 class LicensePlateDetector(
-    var ocrQueue : Queue<OcrItem>,
     var yoloService: YoloService,
     var ocrService: OcrService
 ) {
@@ -32,7 +26,10 @@ class LicensePlateDetector(
      *
      * @param [Bitmap] rawImageBitmap - The raw captured image
      */
-    fun detectAndRecognizeLicensePlates(rawImageBitmap: Bitmap) : Array<YoloService.Obj?> {
+    fun detectAndRecognizeLicensePlates(
+        currentReportFrame: ReportFrame,
+        rawImageBitmap: Bitmap
+    ) : Array<YoloService.Obj?> {
         val objects: Array<YoloService.Obj?> = this.yoloService.detect(rawImageBitmap) ?: return arrayOf()
 
         // Repeat for each detected object (i.e. bounding box)
@@ -51,9 +48,9 @@ class LicensePlateDetector(
 
             // Create a new OCR item and add it to the queue for OCR processing
             // The item will be dropped if the OCR queue is full
-            if (isValidLicensePlateBitmap(bmp) && ocrQueue.size <= MAX_OCR_QUEUE_CAPACITY) {
+            if (isValidLicensePlateBitmap(bmp) && currentReportFrame.ocrQueue.size <= MAX_OCR_QUEUE_CAPACITY) {
                 val newOcrItem = createOcrItem(bmp)
-                ocrQueue.add(newOcrItem)
+                currentReportFrame.ocrQueue.add(newOcrItem)
             }
         }
 
@@ -92,7 +89,7 @@ class LicensePlateDetector(
      *
      * @param [OcrItem] ocrItem - The targeted item to process
      */
-    fun processOcrItem(ocrItem: OcrItem) {
+    fun processOcrItem(currentReportFrame: ReportFrame, ocrItem: OcrItem) {
         ocrItem.ocrStartTime = System.currentTimeMillis()
 
         val callback = object:OcrCallback {
@@ -109,6 +106,8 @@ class LicensePlateDetector(
                 ocrItem.ocrEndTime = System.currentTimeMillis()
 
                 ocrItem.isProcessed = true
+
+                currentReportFrame.detectedLicensePlates.add(ocrResult)
 
                 Log.d("OCR", ocrResult)
             }

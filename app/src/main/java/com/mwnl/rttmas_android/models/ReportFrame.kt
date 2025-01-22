@@ -1,8 +1,11 @@
 package com.mwnl.rttmas_android.models
 
+import android.util.Log
 import org.json.JSONObject
+import java.util.LinkedList
+import java.util.Queue
 
-class ReportPayload {
+class ReportFrame {
 
     // Time
     var reportTimestamp: Int = -1
@@ -15,6 +18,9 @@ class ReportPayload {
 
     // License plates
     var detectedLicensePlates: ArrayList<String> = arrayListOf()
+
+    // The OCR queue
+    val ocrQueue : Queue<OcrItem> = LinkedList()
 
 
     /**
@@ -44,6 +50,8 @@ class ReportPayload {
         json.put("speed_ms",        this.speedMs)
         json.put("heading",         this.heading)
 
+
+        Log.d("OCR", this.detectedLicensePlates.toString())
         json.put("plates", this.detectedLicensePlates.joinToString(","))
 
         return json
