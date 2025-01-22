@@ -76,7 +76,7 @@ class CameraService {
      */
     fun captureImage(callback: ImageCaptureCallback) {
 
-        imageCapture!!.takePicture(
+        imageCapture?.takePicture(
             Executors.newSingleThreadExecutor(),
             object : OnImageCapturedCallback() {
                 override fun onCaptureSuccess(image: ImageProxy) {
@@ -92,7 +92,7 @@ class CameraService {
                     // The camera captures a tall, portrait image
                     // so it has to be center-cropped
                     val width = bmp.width
-                    val height = max(bmp.height, 300)
+                    val height = max(bmp.height, 640)
                     val size = min(width.toDouble(), height.toDouble()).toInt()
                     val x = (width - size) / 2
                     val y = (height - size) / 2
@@ -102,6 +102,8 @@ class CameraService {
 
                     // Bitmap obtained, trigger success callback
                     callback.onSuccess(bitmap)
+
+                    image.close()
                 }
 
                 override fun onError(exception: ImageCaptureException) {
