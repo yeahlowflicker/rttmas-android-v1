@@ -32,8 +32,8 @@ class LicensePlateDetector(
      *
      * @param [Bitmap] rawImageBitmap - The raw captured image
      */
-    fun detectAndRecognizeLicensePlates(rawImageBitmap: Bitmap) {
-        val objects: Array<YoloService.Obj?> = this.yoloService.detect(rawImageBitmap) ?: return
+    fun detectAndRecognizeLicensePlates(rawImageBitmap: Bitmap) : Array<YoloService.Obj?> {
+        val objects: Array<YoloService.Obj?> = this.yoloService.detect(rawImageBitmap) ?: return arrayOf()
 
         // Repeat for each detected object (i.e. bounding box)
         for (i in objects.indices) {
@@ -56,6 +56,8 @@ class LicensePlateDetector(
                 ocrQueue.add(newOcrItem)
             }
         }
+
+        return objects
     }
 
 
@@ -108,6 +110,7 @@ class LicensePlateDetector(
 
                 ocrItem.isProcessed = true
 
+                Log.d("OCR", ocrResult)
             }
 
             override fun onFailure(exception: Exception) {
