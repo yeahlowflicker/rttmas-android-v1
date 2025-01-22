@@ -19,12 +19,10 @@ private val MIN_VALID_LICENSE_PLATE_WIDTH = 200
 
 
 class LicensePlateDetector(
+    var ocrQueue : Queue<OcrItem>,
     var yoloService: YoloService,
     var ocrService: OcrService
 ) {
-
-    // The OCR queue
-    private val ocrQueue : Queue<OcrItem> = LinkedList()
 
 
     /**
@@ -92,11 +90,12 @@ class LicensePlateDetector(
      *
      * @param [OcrItem] ocrItem - The targeted item to process
      */
-    private fun processOcrItem(ocrItem: OcrItem) {
+    fun processOcrItem(ocrItem: OcrItem) {
         ocrItem.ocrStartTime = System.currentTimeMillis()
 
         val callback = object:OcrCallback {
             override fun onSuccess(recognizedText: String) {
+
                 var ocrResult = recognizedText
 
                 ocrResult = LicensePlatePostprocessor.postprocessLicensePlateText(ocrResult)
@@ -106,6 +105,9 @@ class LicensePlateDetector(
 
                 ocrItem.ocrResult = ocrResult
                 ocrItem.ocrEndTime = System.currentTimeMillis()
+
+                ocrItem.isProcessed = true
+
             }
 
             override fun onFailure(exception: Exception) {
