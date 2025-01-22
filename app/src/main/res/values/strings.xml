@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">RTTMAS</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+
+    <string name="title_detection">偵測</string>
+    <string name="title_features">功能</string>
+    <string name="title_preferences">設定</string>
+
+    <string-array name="license_plate_labels">
+        <item>plate</item>
+    </string-array>
 </resources>
