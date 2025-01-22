@@ -9,14 +9,12 @@ import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
 import org.eclipse.paho.client.mqttv3.MqttException
 import org.eclipse.paho.client.mqttv3.MqttMessage
-import org.json.JSONObject
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLSocketFactory
 
 
 const val TAG = "RTTMAS"
 const val MQTT_SERVER_URI = "ssl://rttmas.mwnl.ce.ncu.edu.tw:8883" // Replace with your MQTTS URI
-const val MQTT_CLIENT_ID = "android__rttmas"
 const val MQTT_USERNAME = "test"
 const val MQTT_PASSWORD = "test"
 const val MQTT_QOS = 0
@@ -26,13 +24,9 @@ class MqttService {
     private lateinit var mqttClient: MqttAsyncClient
 
 
-    init {
-        connectToMqttServer()
-    }
-
-    private fun connectToMqttServer() {
+    fun connectToMqttServer(clientID: String) {
         try {
-            mqttClient = MqttAsyncClient(MQTT_SERVER_URI, MQTT_CLIENT_ID, null)
+            mqttClient = MqttAsyncClient(MQTT_SERVER_URI, clientID, null)
             val options = MqttConnectOptions()
 
             // Set options for MQTTS
@@ -56,15 +50,15 @@ class MqttService {
                         "Message arrived: Topic: " + topic + ", Message: " + String(message.payload)
                     )
 
-                    try {
-                        val payload = JSONObject(message.toString())
-
-                        val datetime = payload.getString("datetime")
-                        val content = payload.getString("content")
-                        val alertType = payload.getInt("alert_type")
-                    } catch (e: Exception) {
-
-                    }
+//                    try {
+//                        val payload = JSONObject(message.toString())
+//
+//                        val datetime = payload.getString("datetime")
+//                        val content = payload.getString("content")
+//                        val alertType = payload.getInt("alert_type")
+//                    } catch (e: Exception) {
+//
+//                    }
                 }
 
                 override fun deliveryComplete(token: IMqttDeliveryToken) {
