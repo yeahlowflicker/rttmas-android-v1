@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.util.Log
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.CameraService
 import com.mwnl.rttmas_android.services.FcmService
@@ -33,15 +34,18 @@ class RTTMAS(
     // Flag: Is detection enabled?
     var isDetectionEnabled = false
 
-
-
-
     // A temporary report frame
     var currentReportFrame = ReportFrame()
 
+    // Traffic alert manager
+    var trafficAlertManager = TrafficAlertManager(this)
+
+    // Recycler view adapter
+    var adapterTrafficAlerts = TrafficAlertAdapter(activity, trafficAlertManager.alerts)
+
     // Core services
     var cameraService       = CameraService()
-    var fcmService          = FcmService()
+    var fcmService          = FcmService(activity, trafficAlertManager)
     var gpsInfoService      = GpsInfoService()
     var mqttService         = MqttService()
     var ocrService          = OcrService()
@@ -62,30 +66,48 @@ class RTTMAS(
     )
 
 
+    /**
+     *  [This will be called by MainActivity]
+     *  The entrypoint of the entire RTTMAS logic.
+     */
     fun initialize() {
-        bindGUI()
+        // Setup GUI elements
+        setupGUI()
 
+        // Obtain Android device ID
         deviceID = permissionService.getAndroidDeviceID(context)
 
+        // Setup MQTT
         mqttService.connectToMqttServer(deviceID)
 
-        val ret_init: Boolean = yoloService.loadModel(context.assets, 0, 1)
-        if (!ret_init) {
-            Log.e("MainActivity", "mobilenetssdncnn Init failed")
-        }
+        // Setup FCM
+        fcmService.setupFcm()
 
+        // Load YOLO11 model
+        val retInit: Boolean = yoloService.loadModel(context.assets, 0, 1)
+        if (!retInit)
+            Log.e("MainActivity", "mobilenetssdncnn Init failed")
+
+        // Launch device camera
         cameraService.startCamera(context, activity)
 
+        // Start the never-ending OCR processing thread
         startOcrThread()
 
+        // Start the periodic MQTT report sequence
         startPeriodicReportSequence()
 
+        // Enable detection on initialization complete
         isDetectionEnabled = true
         gui.switchDetectionStatus.isChecked = isDetectionEnabled
         gui.textDetectionStatus.text = "Detection ON"
     }
 
-    private fun bindGUI() {
+
+    /**
+     * Setup and initialize the GUI views.
+     */
+    private fun setupGUI() {
         gui.switchDetectionStatus.setOnCheckedChangeListener { _, isChecked ->
             isDetectionEnabled = isChecked
             gui.textDetectionStatus.text = if (isDetectionEnabled) "Detection ON" else "Detection OFF"
@@ -94,8 +116,18 @@ class RTTMAS(
                 gui.imageViewDetection.setImageBitmap(null)
             }
         }
+
+        // Setup recycler view
+        adapterTrafficAlerts = TrafficAlertAdapter(activity, trafficAlertManager.alerts)
+        gui.recyclerViewTrafficAlerts.layoutManager = LinearLayoutManager(context)
+        gui.recyclerViewTrafficAlerts.adapter = adapterTrafficAlerts
     }
 
+
+    /**
+     * Create a never-ending thread to continuously perform OCR on queued items.
+     * If the queue is empty, this thread is simply idle.
+     */
     private fun startOcrThread() {
         Thread {
             while (true) {
@@ -108,9 +140,11 @@ class RTTMAS(
         }.start()
     }
 
-    // Entrypoint for periodic report sequence
-    private fun startPeriodicReportSequence() {
 
+    /**
+     *  Entrypoint for periodic report sequence.
+     */
+    private fun startPeriodicReportSequence() {
         val handler = Handler()
         handler.postDelayed(object : Runnable {
             override fun run() {
