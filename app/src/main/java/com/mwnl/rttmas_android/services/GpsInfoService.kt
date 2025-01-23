@@ -2,19 +2,10 @@ package com.mwnl.rttmas_android.services
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
-import android.location.LocationManager
-import android.os.Build
-import androidx.core.location.LocationManagerCompat
-import androidx.core.os.CancellationSignal
-import androidx.core.util.Consumer
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Tasks
 import com.mwnl.rttmas_android.models.GpsInfo
-import java.lang.String
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
 
 class GpsInfoService {
 
