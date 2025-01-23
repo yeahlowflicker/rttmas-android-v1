@@ -3,6 +3,11 @@ package com.mwnl.rttmas_android.services
 import android.content.res.AssetManager
 import android.graphics.Bitmap
 
+
+/**
+ * This class is directly related to "/app/cpp/native-lib.cpp".
+ * The function and parameter names must match those defined in that file.
+ */
 class YoloService {
 
     external fun loadModel(mgr: AssetManager?, modelid: Int, cpugpu: Int): Boolean

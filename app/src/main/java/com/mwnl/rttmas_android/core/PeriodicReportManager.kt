@@ -26,6 +26,12 @@ class PeriodicReportManager(
     var licensePlateDetector:   LicensePlateDetector,
 ) {
 
+
+    /**
+     * Upload a given frame to server via MQTT.
+     *
+     * @param [ReportFrame] frame - The previous frame to be uploaded
+     */
     fun uploadAndClearPreviousFrame(frame: ReportFrame) {
         // Upload the payload via MQTT
         mqttService.publishMessage(
@@ -35,7 +41,7 @@ class PeriodicReportManager(
     }
 
     /**
-     * Make a single report and upload to server via MQTT.
+     * Initialize a new report frame object and start its detection sequence.
      *
      * @param [Context] context - The activity context
      */
@@ -89,7 +95,15 @@ class PeriodicReportManager(
     }
 
 
-
+    /**
+     *  A utility method which annotates the bounding boxes on a captured bitmap.
+     *
+     *  @param [Context]        context     - The activity context
+     *  @param [Bitmap]         bitmap      - The bitmap to be annotated on
+     *  @param [Array<Obj?>]    objects     - The bounding boxes detected by YOLO
+     *
+     *  @return [Bitmap] The annotated bitmap
+     */
     private fun annotateBoundingBoxes(
         context: Context, bitmap: Bitmap, objects: Array<Obj?>
     ) : Bitmap {
