@@ -49,16 +49,6 @@ class MqttService {
                         TAG,
                         "Message arrived: Topic: " + topic + ", Message: " + String(message.payload)
                     )
-
-//                    try {
-//                        val payload = JSONObject(message.toString())
-//
-//                        val datetime = payload.getString("datetime")
-//                        val content = payload.getString("content")
-//                        val alertType = payload.getInt("alert_type")
-//                    } catch (e: Exception) {
-//
-//                    }
                 }
 
                 override fun deliveryComplete(token: IMqttDeliveryToken) {
