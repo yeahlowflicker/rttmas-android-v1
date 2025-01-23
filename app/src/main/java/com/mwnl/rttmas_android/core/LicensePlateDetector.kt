@@ -10,7 +10,7 @@ import com.mwnl.rttmas_android.services.YoloService
 
 
 private val MAX_OCR_QUEUE_CAPACITY = 5
-private val MIN_VALID_LICENSE_PLATE_WIDTH = 200
+private val MIN_VALID_LICENSE_PLATE_WIDTH = 150
 
 
 class LicensePlateDetector(
