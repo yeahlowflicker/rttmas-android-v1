@@ -33,7 +33,8 @@ class MainActivity : AppCompatActivity() {
             findViewById(R.id.text_detection_status),
             findViewById(R.id.text_gps_latitude),
             findViewById(R.id.text_gps_longitude),
-            findViewById(R.id.text_speed)
+            findViewById(R.id.text_speed),
+            findViewById(R.id.recycler_view_traffic_alerts)
         )
 
 
