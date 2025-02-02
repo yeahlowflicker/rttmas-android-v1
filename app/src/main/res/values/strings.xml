@@ -7,5 +7,12 @@
 
     <string-array name="license_plate_labels">
         <item>plate</item>
+
+        <item>available</item>
+        <item>bus</item>
+        <item>negative</item>
+        <item>occupied</item>
+        <item>red_line</item>
+        <item>yellow_line</item>
     </string-array>
 </resources>
