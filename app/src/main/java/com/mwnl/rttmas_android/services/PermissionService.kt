@@ -5,6 +5,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
 import android.provider.Settings
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
@@ -39,12 +42,29 @@ class PermissionService {
      *
      *  @param [Activity] activity - The caller activity
      */
-    fun requestAppPermissions(activity: Activity) {
+    fun requestAppPermissions(activity: AppCompatActivity) {
         ActivityCompat.requestPermissions(
             activity,
             REQUIRED_PERMISSIONS,
             REQUEST_CODE_PERMISSIONS
         )
+
+        val requestPermissionLauncher = activity.registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            isGranted: Boolean ->
+
+            if (!isGranted) {
+                // Explain to the user that the feature is unavailable because the
+                // feature requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+
+                Toast.makeText(activity, "Please ensure Camera, Location and Notifications permissions are allowed.", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        for (permission in REQUIRED_PERMISSIONS)
+            requestPermissionLauncher.launch( permission )
     }
 
 

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.util.Log
+import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.CameraService
@@ -73,6 +74,9 @@ class RTTMAS(
     fun initialize() {
         // Setup GUI elements
         setupGUI()
+
+        // Ensure app permissions
+        permissionService.requestAppPermissions(activity as AppCompatActivity)
 
         // Obtain Android device ID
         deviceID = permissionService.getAndroidDeviceID(context)
@@ -155,6 +159,8 @@ class RTTMAS(
             override fun run() {
 
                 if (isDetectionEnabled) {
+                    cameraService.setCameraZoom(2F)
+
                     // Upload the previous report frame
                     periodicReportManager.uploadAndClearPreviousFrame(currentReportFrame)
 
