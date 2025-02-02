@@ -113,6 +113,8 @@ class PeriodicReportManager(
         val canvas = Canvas(rgba)
 
         val colors = intArrayOf(
+            Color.MAGENTA,        // plate
+
             Color.GREEN,        // available
             Color.BLUE,         // bus
             Color.DKGRAY,       // negative
