@@ -10,7 +10,8 @@ import android.graphics.Bitmap
  */
 class YoloService {
 
-    external fun loadModel(mgr: AssetManager?, modelid: Int, cpugpu: Int): Boolean
+    external fun loadLicensePlateModel(mgr: AssetManager?, modelid: Int, cpugpu: Int): Boolean
+    external fun loadParkingSlotModel(mgr: AssetManager?, modelid: Int, cpugpu: Int): Boolean
 
     class Obj {
         var x: Float = 0f

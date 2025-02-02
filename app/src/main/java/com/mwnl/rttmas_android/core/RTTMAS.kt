@@ -83,10 +83,15 @@ class RTTMAS(
         // Setup FCM
         fcmService.setupFcm()
 
-        // Load YOLO11 model
-        val retInit: Boolean = yoloService.loadModel(context.assets, 0, 1)
-        if (!retInit)
-            Log.e("MainActivity", "mobilenetssdncnn Init failed")
+        // Load YOLO11 model (license plate)
+        val retInitPlateModel: Boolean = yoloService.loadLicensePlateModel(context.assets, 0, 1)
+        if (!retInitPlateModel)
+            Log.e("MainActivity", "mobilenetssdncnn Init failed for license plate model")
+
+        // Load YOLO11 model (parking slot)
+        val retInitParkingModel: Boolean = yoloService.loadParkingSlotModel(context.assets, 0, 1)
+        if (!retInitParkingModel)
+            Log.e("MainActivity", "mobilenetssdncnn Init failed for parking slot model")
 
         // Launch device camera
         cameraService.startCamera(context, activity)
