@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import androidx.camera.core.Camera
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.core.ImageCaptureException
@@ -20,6 +21,8 @@ import kotlin.math.min
 class CameraService {
 
     private var imageCapture: ImageCapture? = null
+
+    private var camera: Camera? = null
 
     /**
      * [This will be called upon detection start or app init]
@@ -50,22 +53,26 @@ class CameraService {
                     .build()
 
                 //
-                val camera = cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     (activity as LifecycleOwner),
                     cameraSelector,
                     imageCapture
                 )
 
-                // Set the zoom level of the camera
-                val cameraControl = camera.cameraControl;
-                cameraControl.setZoomRatio(2F);
-
+                setCameraZoom(2F)
 
             } catch (e: ExecutionException) {
                 // No errors need to be handled for this Future.
                 // This should never be reached.
             } catch (_: InterruptedException) { }
         }, ContextCompat.getMainExecutor(context))
+    }
+
+
+    fun setCameraZoom(zoomValue: Float) {
+        // Set the zoom level of the camera
+        val cameraControl = camera?.cameraControl;
+        cameraControl?.setZoomRatio(zoomValue);
     }
 
 
