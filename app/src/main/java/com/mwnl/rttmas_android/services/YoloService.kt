@@ -20,6 +20,7 @@ class YoloService {
         var h: Float = 0f
         var label: Int = 0
         var prob: Float = 0f
+        var modelIndex: Int = 0     // Which model was used to detect this object
     }
 
     external fun detect(bitmap: Bitmap?): Array<Obj?>?

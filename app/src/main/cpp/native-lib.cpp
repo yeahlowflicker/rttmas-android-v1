@@ -59,6 +59,7 @@ static jfieldID wId;
 static jfieldID hId;
 static jfieldID labelId;
 static jfieldID probId;
+static jfieldID modelIndex;
 
 
 JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -128,6 +129,7 @@ Java_com_mwnl_rttmas_1android_services_YoloService_loadLicensePlateModel(JNIEnv 
     hId = env->GetFieldID(objCls, "h", "F");
     labelId = env->GetFieldID(objCls, "label", "I");
     probId = env->GetFieldID(objCls, "prob", "F");
+    modelIndex = env->GetFieldID(objCls, "modelIndex", "I");
 
     return JNI_TRUE;
 }
@@ -181,6 +183,7 @@ Java_com_mwnl_rttmas_1android_services_YoloService_loadParkingSlotModel(JNIEnv *
     hId = env->GetFieldID(objCls, "h", "F");
     labelId = env->GetFieldID(objCls, "label", "I");
     probId = env->GetFieldID(objCls, "prob", "F");
+    modelIndex = env->GetFieldID(objCls, "modelIndex", "I");
 
     return JNI_TRUE;
 }
@@ -215,6 +218,7 @@ Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject t
         env->SetFloatField(jObj, hId, plateObjects[i].rect.height);
         env->SetIntField(jObj, labelId, plateObjects[i].label);
         env->SetFloatField(jObj, probId, plateObjects[i].prob);
+        env->SetIntField(jObj, modelIndex, 0);
 
         env->SetObjectArrayElement(jObjArray, i, jObj);
     }
@@ -229,6 +233,7 @@ Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject t
         env->SetFloatField(jObj, hId, parkingObjects[i].rect.height);
         env->SetIntField(jObj, labelId, parkingObjects[i].label + CLASS_COUNT_LICENSE_PLATE);
         env->SetFloatField(jObj, probId, parkingObjects[i].prob);
+        env->SetIntField(jObj, modelIndex, 1);
 
         env->SetObjectArrayElement(jObjArray, plateCount+i, jObj);
     }
