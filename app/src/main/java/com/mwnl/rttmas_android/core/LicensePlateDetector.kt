@@ -38,19 +38,23 @@ class LicensePlateDetector(
             // Get the YOLO-formatted detected object
             val obj = objects[i]!!
 
-            // Crop the license plate from the original image
-            // to form a license plate bitmap
-            val bmp = Bitmap.createBitmap(
-                rawImageBitmap,
-                obj.x.toInt(), obj.y.toInt(),
-                obj.w.toInt(), obj.h.toInt()
-            )
+            // Model index 0 is the license plate detection model
+            if (obj.modelIndex == 0) {
 
-            // Create a new OCR item and add it to the queue for OCR processing
-            // The item will be dropped if the OCR queue is full
-            if (isValidLicensePlateBitmap(bmp) && currentReportFrame.ocrQueue.size <= MAX_OCR_QUEUE_CAPACITY) {
-                val newOcrItem = createOcrItem(bmp)
-                currentReportFrame.ocrQueue.add(newOcrItem)
+                // Crop the license plate from the original image
+                // to form a license plate bitmap
+                val bmp = Bitmap.createBitmap(
+                    rawImageBitmap,
+                    obj.x.toInt(), obj.y.toInt(),
+                    obj.w.toInt(), obj.h.toInt()
+                )
+
+                // Create a new OCR item and add it to the queue for OCR processing
+                // The item will be dropped if the OCR queue is full
+                if (isValidLicensePlateBitmap(bmp) && currentReportFrame.ocrQueue.size <= MAX_OCR_QUEUE_CAPACITY) {
+                    val newOcrItem = createOcrItem(bmp)
+                    currentReportFrame.ocrQueue.add(newOcrItem)
+                }
             }
         }
 
