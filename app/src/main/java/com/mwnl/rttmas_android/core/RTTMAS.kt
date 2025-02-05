@@ -16,7 +16,7 @@ import com.mwnl.rttmas_android.services.PermissionService
 import com.mwnl.rttmas_android.services.YoloService
 
 // How often should a report be made, time interval in ms
-const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1000L
+const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1500L
 
 
 /**
@@ -25,7 +25,7 @@ const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1000L
  */
 class RTTMAS(
     var context:    Context,
-    var activity: Activity,
+    var activity:   Activity,
     var gui:        GUI,
 ) {
 
