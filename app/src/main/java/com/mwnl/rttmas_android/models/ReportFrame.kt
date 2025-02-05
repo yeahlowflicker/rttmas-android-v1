@@ -19,6 +19,9 @@ class ReportFrame {
     // License plates
     var detectedLicensePlates: ArrayList<String> = arrayListOf()
 
+    // Parking slot detection status
+    var availableParkingSlotFound: Boolean = false
+
     // The OCR queue
     val ocrQueue : Queue<OcrItem> = LinkedList()
 
@@ -41,18 +44,19 @@ class ReportFrame {
      *
      * @return [JSONObject] The jsonified result
      */
-    fun jsonify() : JSONObject {
+    fun jsonify(deviceID: String) : JSONObject {
         val json = JSONObject()
 
-        json.put("report_time",     this.reportTimestamp)
-        json.put("latitude",        this.latitude)
-        json.put("longitude",       this.longitude)
-        json.put("speed_ms",        this.speedMs)
-        json.put("heading",         this.heading)
+        json.put("report_time",         this.reportTimestamp)
+        json.put("reporter_uid",        deviceID)
+        json.put("latitude",            this.latitude)
+        json.put("longitude",           this.longitude)
+        json.put("speed_ms",            this.speedMs)
+        json.put("heading",             this.heading)
 
-
-        Log.d("OCR", this.detectedLicensePlates.toString())
         json.put("plates", this.detectedLicensePlates.joinToString(","))
+
+        json.put("parking_available",   this.availableParkingSlotFound)
 
         return json
     }

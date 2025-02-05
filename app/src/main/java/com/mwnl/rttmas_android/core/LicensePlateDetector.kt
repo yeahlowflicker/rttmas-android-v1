@@ -56,6 +56,14 @@ class LicensePlateDetector(
                     currentReportFrame.ocrQueue.add(newOcrItem)
                 }
             }
+
+            // Parking slot detection model
+            else if (obj.modelIndex == 1) {
+
+                // Set the parking slot status to true, if the label index is 1
+                if (obj.label == 1)
+                    currentReportFrame.availableParkingSlotFound = true
+            }
         }
 
         return objects

@@ -14,7 +14,7 @@ import com.mwnl.rttmas_android.services.ImageCaptureCallback
 import com.mwnl.rttmas_android.services.MqttService
 import com.mwnl.rttmas_android.services.YoloService.Obj
 
-const val MQTT_TOPIC_PERIODIC_REPORT = "report"
+const val MQTT_TOPIC_PERIODIC_REPORT = "traffic/user-report"
 
 class PeriodicReportManager(
     var rttmas:                 RTTMAS,
@@ -36,7 +36,7 @@ class PeriodicReportManager(
         // Upload the payload via MQTT
         mqttService.publishMessage(
             MQTT_TOPIC_PERIODIC_REPORT,
-            frame.jsonify().toString()
+            frame.jsonify(rttmas.deviceID).toString()
         )
     }
 
@@ -57,16 +57,14 @@ class PeriodicReportManager(
                 rttmas.currentReportFrame = ReportFrame()
 
                 // Get system time in ms
-                rttmas.currentReportFrame.reportTimestamp = System.currentTimeMillis().toInt()
-
-                // Perform YOLO detection
-                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(rttmas.currentReportFrame, bitmap)
-
+                rttmas.currentReportFrame.reportTimestamp = (System.currentTimeMillis()/1000).toInt()
 
                 // Obtain GPS info
                 val gpsInfo = gpsInfoService.getGpsLocationInfo(context) ?: return
                 rttmas.currentReportFrame.applyGpsInfo(gpsInfo)
 
+                // Perform YOLO detection
+                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(rttmas.currentReportFrame, bitmap)
 
                 // Render the captured and annotated bitmap
                 activity.runOnUiThread {
