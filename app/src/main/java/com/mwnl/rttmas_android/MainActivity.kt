@@ -1,6 +1,8 @@
 package com.mwnl.rttmas_android
 
+import android.os.Build
 import android.os.Bundle
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.mwnl.rttmas_android.core.GUI
 import com.mwnl.rttmas_android.core.RTTMAS
@@ -17,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var gui : GUI
 
 
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -34,7 +37,10 @@ class MainActivity : AppCompatActivity() {
             findViewById(R.id.text_gps_latitude),
             findViewById(R.id.text_gps_longitude),
             findViewById(R.id.text_speed),
-            findViewById(R.id.recycler_view_traffic_alerts)
+            findViewById(R.id.recycler_view_traffic_alerts),
+            findViewById(R.id.warning_gps_unavailable),
+            findViewById(R.id.warning_server_unavailable),
+            findViewById(R.id.warning_permissions_not_granted),
         )
 
 
