@@ -2,8 +2,11 @@ package com.mwnl.rttmas_android.core
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.util.Log
+import android.view.View
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mwnl.rttmas_android.models.ReportFrame
@@ -18,6 +21,8 @@ import com.mwnl.rttmas_android.services.YoloService
 // How often should a report be made, time interval in ms
 const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1500L
 
+const val PERIODIC_CONNTECTABILITY_CHECK_INTERVAL_MILLISECS = 1000L
+
 
 /**
  *  Main wrapper for RTTMAS.
@@ -31,6 +36,13 @@ class RTTMAS(
 
     // The device's unique ID
     lateinit var deviceID : String
+
+    // A status flag which tells the app's status
+    // 0: Running normally
+    // 1: Permissions not granted
+    // 2: GPS disabled
+    // 3: Disconnted from backend server
+    var appConnectabilityStatus = 0
 
     // Flag: Is detection enabled?
     var isDetectionEnabled = false
@@ -71,6 +83,7 @@ class RTTMAS(
      *  [This will be called by MainActivity]
      *  The entrypoint of the entire RTTMAS logic.
      */
+    @RequiresApi(Build.VERSION_CODES.P)
     fun initialize() {
         // Setup GUI elements
         setupGUI()
@@ -87,6 +100,9 @@ class RTTMAS(
         // Setup FCM
         fcmService.setupFcm()
 
+        // Setup GPS service
+        gpsInfoService.setupGpsStatusReceiver(activity)
+
         // Load YOLO11 model (license plate)
         val retInitPlateModel: Boolean = yoloService.loadLicensePlateModel(context.assets, 0, 1)
         if (!retInitPlateModel)
@@ -99,6 +115,9 @@ class RTTMAS(
 
         // Launch device camera
         cameraService.startCamera(context, activity)
+
+        // Start the periodic connectability assertion
+        startAssertConnectabilitySequence()
 
         // Start the never-ending OCR processing thread
         startOcrThread()
@@ -158,7 +177,7 @@ class RTTMAS(
         handler.postDelayed(object : Runnable {
             override fun run() {
 
-                if (isDetectionEnabled) {
+                if (appConnectabilityStatus == 0 && isDetectionEnabled) {
                     cameraService.setCameraZoom(2F)
 
                     // Upload the previous report frame
@@ -172,5 +191,54 @@ class RTTMAS(
 
             }
         }, PERIODIC_REPORT_INTERVAL_MILLISECS)
+    }
+
+
+    private fun assertConnectability() {
+        val isPermissionsGranted    = permissionService.checkIfAppPermissionsGranted(context)
+        val isGpsAvailable          = gpsInfoService.isGpsEnabled
+        val isMqttConnected         = mqttService.isMqttConnected
+
+        activity.runOnUiThread {
+
+            if (!isPermissionsGranted) {
+//                permissionService.requestAppPermissions(activity as AppCompatActivity)
+                appConnectabilityStatus = 1
+            }
+            else if (!isGpsAvailable) {
+                appConnectabilityStatus = 2
+
+                gui.textGpsLatitude.text = "0.000000"
+                gui.textGpsLatitude.text = "0.000000"
+                gui.textSpeed.text = "0.0 km/h"
+            }
+            else if (!isMqttConnected) {
+                mqttService.disconnect()
+                mqttService.connectToMqttServer(deviceID)
+                appConnectabilityStatus = 3
+            }
+            else {
+                appConnectabilityStatus = 0
+            }
+
+            gui.imageViewDetection.visibility           = if (appConnectabilityStatus == 0) View.VISIBLE else View.GONE
+            gui.switchDetectionStatus.isEnabled         = appConnectabilityStatus == 0
+
+            gui.warningPermissionNotGranted.visibility  = if (appConnectabilityStatus == 1) View.VISIBLE else View.GONE
+            gui.warningGpsUnavailable.visibility        = if (appConnectabilityStatus == 2) View.VISIBLE else View.GONE
+            gui.warningServerDisconnected.visibility    = if (appConnectabilityStatus == 3) View.VISIBLE else View.GONE
+        }
+    }
+
+
+    private fun startAssertConnectabilitySequence() {
+        val handler = Handler()
+
+        handler.postDelayed(object: Runnable {
+            override fun run() {
+                assertConnectability()
+                handler.postDelayed(this, PERIODIC_CONNTECTABILITY_CHECK_INTERVAL_MILLISECS)
+            }
+        }, PERIODIC_CONNTECTABILITY_CHECK_INTERVAL_MILLISECS)
     }
 }
