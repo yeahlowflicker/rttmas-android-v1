@@ -74,7 +74,7 @@ class PermissionService {
      *  @param  [Context] context - Pass the activity context here
      *  @return [Boolean] True if permissions are granted, false otherwise
      */
-    private fun checkIfAppPermissionsGranted(context: Context): Boolean {
+    fun checkIfAppPermissionsGranted(context: Context): Boolean {
         for (permission in REQUIRED_PERMISSIONS)
             if (ContextCompat.checkSelfPermission( context, permission ) != PackageManager.PERMISSION_GRANTED)
                 return false
