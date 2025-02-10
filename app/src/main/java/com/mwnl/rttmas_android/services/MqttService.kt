@@ -1,6 +1,7 @@
 package com.mwnl.rttmas_android.services
 
 import android.util.Log
+import com.mwnl.rttmas_android.core.MQTT_TOPIC_PERIODIC_REPORT
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
 import org.eclipse.paho.client.mqttv3.IMqttToken
@@ -23,28 +24,36 @@ class MqttService {
 
     private lateinit var mqttClient: MqttAsyncClient
 
+    var isMqttConnected = false
+
 
     fun connectToMqttServer(clientID: String) {
         try {
             mqttClient = MqttAsyncClient(MQTT_SERVER_URI, clientID, null)
             val options = MqttConnectOptions()
 
+//            options.isAutomaticReconnect = true
+
             // Set options for MQTTS
             options.userName = MQTT_USERNAME
             options.password = MQTT_PASSWORD.toCharArray()
             options.isCleanSession = true
-            options.connectionTimeout = 10
-            options.keepAliveInterval = 20
+//            options.connectionTimeout = 10
+//            options.keepAliveInterval = 20
 
             // Enable SSL/TLS (Optional)
             options.socketFactory = SSLSocketFactory.getDefault()
 
             mqttClient.setCallback(object : MqttCallback {
                 override fun connectionLost(cause: Throwable) {
+                    isMqttConnected = false
                     Log.d(TAG, "Connection lost: " + cause.message)
                 }
 
                 override fun messageArrived(topic: String, message: MqttMessage) {
+                    if (topic == MQTT_TOPIC_PERIODIC_REPORT)
+                        isMqttConnected = true
+
                     Log.d(
                         TAG,
                         "Message arrived: Topic: " + topic + ", Message: " + String(message.payload)
@@ -58,8 +67,9 @@ class MqttService {
             mqttClient.connect(options, null, object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken) {
                     Log.d(TAG, "Connected to MQTTS broker")
-
                     subscribeToTopic("test")
+
+                    isMqttConnected = true
                 }
 
                 override fun onFailure(asyncActionToken: IMqttToken, exception: Throwable) {
@@ -106,6 +116,8 @@ class MqttService {
             if (mqttClient.isConnected) {
                 mqttClient.disconnect()
                 Log.d(TAG, "MQTT Disconnected")
+
+                isMqttConnected = false
             }
         } catch (e: MqttException) {
             e.printStackTrace()
