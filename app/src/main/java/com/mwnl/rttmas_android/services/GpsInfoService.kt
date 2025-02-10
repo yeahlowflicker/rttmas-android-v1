@@ -1,13 +1,39 @@
 package com.mwnl.rttmas_android.services
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.LOCATION_SERVICE
+import android.content.Intent
+import android.content.IntentFilter
+import android.location.LocationManager
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Tasks
 import com.mwnl.rttmas_android.models.GpsInfo
 
 class GpsInfoService {
+
+    var isGpsEnabled = false
+
+
+    @RequiresApi(Build.VERSION_CODES.P)
+    fun setupGpsStatusReceiver(activity: Activity) {
+
+        val locationManager = activity.getSystemService(LOCATION_SERVICE) as LocationManager
+        isGpsEnabled = locationManager.isLocationEnabled
+
+        val receiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                isGpsEnabled = locationManager.isLocationEnabled
+            }
+        }
+
+        activity.registerReceiver(receiver, IntentFilter(LocationManager.MODE_CHANGED_ACTION))
+    }
 
 
     @SuppressLint("MissingPermission")
