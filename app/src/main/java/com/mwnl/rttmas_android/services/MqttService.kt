@@ -1,6 +1,7 @@
 package com.mwnl.rttmas_android.services
 
 import android.util.Log
+import com.mwnl.rttmas_android.BuildConfig
 import com.mwnl.rttmas_android.core.MQTT_TOPIC_PERIODIC_REPORT
 import org.eclipse.paho.client.mqttv3.IMqttActionListener
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken
@@ -13,12 +14,11 @@ import org.eclipse.paho.client.mqttv3.MqttMessage
 import java.nio.charset.StandardCharsets
 import javax.net.ssl.SSLSocketFactory
 
-
 const val TAG = "RTTMAS"
-const val MQTT_SERVER_URI = "ssl://rttmas.mwnl.ce.ncu.edu.tw:8883" // Replace with your MQTTS URI
-const val MQTT_USERNAME = "test"
-const val MQTT_PASSWORD = "test"
-const val MQTT_QOS = 0
+const val MQTT_SERVER_URI = BuildConfig.MQTT_SERVER_URI
+const val MQTT_USERNAME = BuildConfig.MQTT_USERNAME
+const val MQTT_PASSWORD = BuildConfig.MQTT_PASSWORD
+const val MQTT_QOS = BuildConfig.MQTT_QOS
 
 class MqttService {
 

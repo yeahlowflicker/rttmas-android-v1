@@ -5,6 +5,21 @@ plugins {
     id("com.google.gms.google-services")
 }
 
+android.buildFeatures.buildConfig true
+
+// Load properties from local.properties
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(new FileInputStream(localPropertiesFile))
+}
+
+// Access the API key from local.properties
+def MQTT_SERVER_URI = localProperties.getProperty("MQTT_SERVER_URI")
+def MQTT_USERNAME = localProperties.getProperty("MQTT_USERNAME")
+def MQTT_PASSWORD = localProperties.getProperty("MQTT_PASSWORD")
+def MQTT_QOS = localProperties.getProperty("MQTT_QOS")
+
 android {
     namespace 'com.mwnl.rttmas_android'
     compileSdk 35
@@ -23,6 +38,18 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+            buildConfigField "String",  "MQTT_SERVER_URI",  "\"${MQTT_SERVER_URI}\""
+            buildConfigField "String",  "MQTT_USERNAME",    "\"${MQTT_USERNAME}\""
+            buildConfigField "String",  "MQTT_PASSWORD",    "\"${MQTT_PASSWORD}\""
+            buildConfigField "int",     "MQTT_QOS",         "${MQTT_QOS}"
+        }
+
+        debug {
+            buildConfigField "String",  "MQTT_SERVER_URI",  "\"${MQTT_SERVER_URI}\""
+            buildConfigField "String",  "MQTT_USERNAME",    "\"${MQTT_USERNAME}\""
+            buildConfigField "String",  "MQTT_PASSWORD",    "\"${MQTT_PASSWORD}\""
+            buildConfigField "int",     "MQTT_QOS",         "${MQTT_QOS}"
         }
     }
     compileOptions {
