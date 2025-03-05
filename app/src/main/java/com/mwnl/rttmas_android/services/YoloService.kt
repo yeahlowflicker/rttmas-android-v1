@@ -23,7 +23,7 @@ class YoloService {
         var modelIndex: Int = 0     // Which model was used to detect this object
     }
 
-    external fun detect(bitmap: Bitmap?): Array<Obj?>?
+    external fun detect(bitmap: Bitmap?, detectParking: Boolean): Array<Obj?>?
 
     companion object {
         init {

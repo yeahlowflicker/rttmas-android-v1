@@ -192,7 +192,7 @@ Java_com_mwnl_rttmas_1android_services_YoloService_loadParkingSlotModel(JNIEnv *
 int imgWidth;
 int imgHeight;
 JNIEXPORT jobjectArray JNICALL
-Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject thiz, jobject bitmap) {
+Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject thiz, jobject bitmap, jboolean detectParking) {
     cv::Mat img = bitmapToMat(env, bitmap);
 
     imgWidth = img.cols;
@@ -200,12 +200,14 @@ Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject t
     std::vector<DetectRes> plateObjects, parkingObjects;
     
     plateObjects = g_license_plate->detect(img, 0.4, 0.5);
-    parkingObjects = g_parking_slot->detect(img, 0.4, 0.5);
-
     size_t plateCount = plateObjects.size();
-    size_t parkingCount = parkingObjects.size();
+    size_t totalObjectCount = plateCount;
 
-    size_t totalObjectCount = plateCount+parkingCount;
+    if (detectParking) {
+        parkingObjects = g_parking_slot->detect(img, 0.4, 0.5);
+        size_t parkingCount = parkingObjects.size();
+        totalObjectCount = plateCount+parkingCount;
+    }
 
     jobjectArray jObjArray = env->NewObjectArray(totalObjectCount, objCls, NULL);
     
@@ -224,18 +226,20 @@ Java_com_mwnl_rttmas_1android_services_YoloService_detect(JNIEnv *env, jobject t
     }
 
 
-    for (size_t i = 0; i < parkingObjects.size(); i++) {
-        jobject jObj = env->NewObject(objCls, constructortorId);
+    if (detectParking) {
+        for (size_t i = 0; i < parkingObjects.size(); i++) {
+            jobject jObj = env->NewObject(objCls, constructortorId);
 
-        env->SetFloatField(jObj, xId, parkingObjects[i].rect.x);
-        env->SetFloatField(jObj, yId, parkingObjects[i].rect.y);
-        env->SetFloatField(jObj, wId, parkingObjects[i].rect.width);
-        env->SetFloatField(jObj, hId, parkingObjects[i].rect.height);
-        env->SetIntField(jObj, labelId, parkingObjects[i].label + CLASS_COUNT_LICENSE_PLATE);
-        env->SetFloatField(jObj, probId, parkingObjects[i].prob);
-        env->SetIntField(jObj, modelIndex, 1);
+            env->SetFloatField(jObj, xId, parkingObjects[i].rect.x);
+            env->SetFloatField(jObj, yId, parkingObjects[i].rect.y);
+            env->SetFloatField(jObj, wId, parkingObjects[i].rect.width);
+            env->SetFloatField(jObj, hId, parkingObjects[i].rect.height);
+            env->SetIntField(jObj, labelId, parkingObjects[i].label + CLASS_COUNT_LICENSE_PLATE);
+            env->SetFloatField(jObj, probId, parkingObjects[i].prob);
+            env->SetIntField(jObj, modelIndex, 1);
 
-        env->SetObjectArrayElement(jObjArray, plateCount+i, jObj);
+            env->SetObjectArrayElement(jObjArray, plateCount + i, jObj);
+        }
     }
 
     return jObjArray;

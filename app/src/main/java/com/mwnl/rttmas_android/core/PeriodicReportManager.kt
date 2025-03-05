@@ -6,12 +6,14 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.util.Log
 import com.mwnl.rttmas_android.R
 import com.mwnl.rttmas_android.models.ReportFrame
 import com.mwnl.rttmas_android.services.CameraService
 import com.mwnl.rttmas_android.services.GpsInfoService
 import com.mwnl.rttmas_android.services.ImageCaptureCallback
 import com.mwnl.rttmas_android.services.MqttService
+import com.mwnl.rttmas_android.services.TAG
 import com.mwnl.rttmas_android.services.YoloService.Obj
 
 const val MQTT_TOPIC_PERIODIC_REPORT = "traffic/user-report"
@@ -45,7 +47,7 @@ class PeriodicReportManager(
      *
      * @param [Context] context - The activity context
      */
-    fun initializeNewReportFrame(context: Context) {
+    fun initializeNewReportFrame(context: Context, detectParking: Boolean) {
 
         // Construct the callback for image capture
         // The onSuccess method contains the logic after the image
@@ -64,7 +66,7 @@ class PeriodicReportManager(
                 rttmas.currentReportFrame.applyGpsInfo(gpsInfo)
 
                 // Perform YOLO detection
-                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(rttmas.currentReportFrame, bitmap)
+                val detectedObjects = licensePlateDetector.detectAndRecognizeLicensePlates(rttmas.currentReportFrame, bitmap, detectParking)
 
                 // Render the captured and annotated bitmap
                 activity.runOnUiThread {
@@ -83,7 +85,7 @@ class PeriodicReportManager(
             }
 
             override fun onFailure(exception: Exception) {
-                TODO("Not yet implemented")
+                Log.e(TAG, "Image capture failed.")
             }
 
         }

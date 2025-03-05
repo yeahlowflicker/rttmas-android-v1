@@ -28,9 +28,10 @@ class LicensePlateDetector(
      */
     fun detectAndRecognizeLicensePlates(
         currentReportFrame: ReportFrame,
-        rawImageBitmap: Bitmap
+        rawImageBitmap: Bitmap,
+        detectParking: Boolean
     ) : Array<YoloService.Obj?> {
-        val objects: Array<YoloService.Obj?> = this.yoloService.detect(rawImageBitmap) ?: return arrayOf()
+        val objects: Array<YoloService.Obj?> = this.yoloService.detect(rawImageBitmap, detectParking) ?: return arrayOf()
 
         // Repeat for each detected object (i.e. bounding box)
         for (i in objects.indices) {
