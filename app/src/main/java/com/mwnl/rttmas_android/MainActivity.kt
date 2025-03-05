@@ -1,8 +1,6 @@
 package com.mwnl.rttmas_android
 
-import android.os.Build
 import android.os.Bundle
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.mwnl.rttmas_android.core.GUI
 import com.mwnl.rttmas_android.core.RTTMAS
@@ -19,15 +17,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var gui : GUI
 
 
-    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
 
         // Configure view binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 
         // Setup GUI references
         gui = GUI(
