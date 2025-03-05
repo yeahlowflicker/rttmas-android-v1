@@ -43,7 +43,7 @@ class CameraService {
 
                 // Obtain camera info and select the appropriate camera lens
                 val availableCameraInfos = cameraProvider.availableCameraInfos
-                val cameraSelector = availableCameraInfos[2].cameraSelector
+                val cameraSelector = availableCameraInfos.first().cameraSelector
 
 
                 // Initialize the image capture object
