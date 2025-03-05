@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
 
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android.buildFeatures.buildConfig true
@@ -26,10 +27,10 @@ android {
 
     defaultConfig {
         applicationId "com.mwnl.rttmas_android"
-        minSdk 26
+        minSdk 28
         targetSdk 35
         versionCode 1
-        versionName "1.0"
+        versionName '1.0t2'
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -116,6 +117,9 @@ dependencies {
     implementation platform(libs.firebase.bom)
     implementation libs.firebase.messaging
 
+    // Firebase Crashlytics and Analytics
+    implementation libs.firebase.crashlytics
+//    implementation libs.firebase.analytics
 
     // GPS Location
     implementation libs.play.services.location
