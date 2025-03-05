@@ -1,12 +1,12 @@
 package com.mwnl.rttmas_android.core
 
 import android.app.Activity
+import android.app.ActivityManager
 import android.content.Context
-import android.os.Build
 import android.os.Handler
 import android.util.Log
 import android.view.View
-import androidx.annotation.RequiresApi
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.mwnl.rttmas_android.models.ReportFrame
@@ -18,11 +18,15 @@ import com.mwnl.rttmas_android.services.OcrService
 import com.mwnl.rttmas_android.services.PermissionService
 import com.mwnl.rttmas_android.services.YoloService
 
-// How often should a report be made, time interval in ms
-const val PERIODIC_REPORT_INTERVAL_MILLISECS = 1500L
 
+// How often should a report be made, time interval in ms
+const val PERIODIC_REPORT_INTERVAL_MILLISECS = 3000L
+
+// How often should the app check the device's status, in ms
 const val PERIODIC_CONNTECTABILITY_CHECK_INTERVAL_MILLISECS = 1000L
 
+// How much available memory is required for parking model to activate
+const val ENABLE_PARKING_MODEL_MEMORY_SIZE_THRESHOLD_MB = 1500L
 
 /**
  *  Main wrapper for RTTMAS.
@@ -78,13 +82,18 @@ class RTTMAS(
         gpsInfoService, licensePlateDetector
     )
 
+    // Should the app detect parking slots?
+    // This is true only if there is enough memory
+    var isDetectParking = getDeviceAvailableMemorySizeInMB() > ENABLE_PARKING_MODEL_MEMORY_SIZE_THRESHOLD_MB
+
 
     /**
      *  [This will be called by MainActivity]
      *  The entrypoint of the entire RTTMAS logic.
      */
-    @RequiresApi(Build.VERSION_CODES.P)
     fun initialize() {
+        Toast.makeText(context, "Available Memory: ${getDeviceAvailableMemorySizeInMB()} MB", Toast.LENGTH_SHORT).show()
+
         // Setup GUI elements
         setupGUI()
 
@@ -109,9 +118,11 @@ class RTTMAS(
             Log.e("MainActivity", "mobilenetssdncnn Init failed for license plate model")
 
         // Load YOLO11 model (parking slot)
-        val retInitParkingModel: Boolean = yoloService.loadParkingSlotModel(context.assets, 0, 1)
-        if (!retInitParkingModel)
-            Log.e("MainActivity", "mobilenetssdncnn Init failed for parking slot model")
+        if (isDetectParking) {
+            val retInitParkingModel: Boolean = yoloService.loadParkingSlotModel(context.assets, 0, 1)
+            if (!retInitParkingModel)
+                Log.e("MainActivity", "mobilenetssdncnn Init failed for parking slot model")
+        }
 
         // Launch device camera
         cameraService.startCamera(context, activity)
@@ -153,6 +164,19 @@ class RTTMAS(
 
 
     /**
+     * Obtain the device's total memory, in Megabytes.
+     */
+    private fun getDeviceAvailableMemorySizeInMB() : Long {
+        val actManager = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val memInfo = ActivityManager.MemoryInfo()
+        actManager.getMemoryInfo(memInfo)
+        val availableMemory = memInfo.availMem / (1024 * 1024)
+
+        return availableMemory
+    }
+
+
+    /**
      * Create a never-ending thread to continuously perform OCR on queued items.
      * If the queue is empty, this thread is simply idle.
      */
@@ -178,13 +202,13 @@ class RTTMAS(
             override fun run() {
 
                 if (appConnectabilityStatus == 0 && isDetectionEnabled) {
-                    cameraService.setCameraZoom(2F)
+                    cameraService.setCameraZoom(1F)
 
                     // Upload the previous report frame
                     periodicReportManager.uploadAndClearPreviousFrame(currentReportFrame)
 
                     // Then, initialize a new report frame if detection is enabled
-                    periodicReportManager.initializeNewReportFrame(context)
+                    periodicReportManager.initializeNewReportFrame(context, isDetectParking)
                 }
 
                 handler.postDelayed(this, PERIODIC_REPORT_INTERVAL_MILLISECS)
